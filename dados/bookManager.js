@@ -1,56 +1,93 @@
-import fs from 'fs';
-import { Book } from '../models/Book.js';
+import fs from "fs";
+import { Book } from "../models/Book.js";
 
-
-const filePath = './dados/livros.json';
+const filePath = "./dados/livros.json";
 
 /**
- * 
+ *
  * @returns {Promise<Book[]>}
  */
 export const getBooks = async () => {
-    const data = await fs.promises.readFile(filePath, 'utf-8');
-    return JSON.parse(data).books;
-}
-
+  const data = await fs.promises.readFile(filePath, "utf-8");
+  return JSON.parse(data).books;
+};
 
 /**
- * 
- * @param {Book} livro 
+ * @returns {Promise<Book>}
+ * @param {Book} livro
  */
 export const addLivro = async (livro) => {
-    const books = await getBooks();
+  const books = await getBooks();
 
-    const lastBook = books[books.length - 1];
-    livro.id = lastBook.id + 1;
+  const lastBook = books[books.length - 1];
+  livro.id = lastBook.id + 1;
 
-    const newBooks = [...books, livro];
+  const keys = Object.keys(livro);
 
-    const data = JSON.stringify({ books: newBooks });
+  keys.forEach((key) => {
+    if (!livro[key]) {
+      throw Error(`O campo [${key}] é obrigatorio`);
+    }
+  });
 
-    await fs.promises.writeFile(filePath, data, 'utf-8');
-}
+  keys.pop();
+
+  keys.forEach((key) => {
+    if (!livro[key]) {
+      throw Error(`O campo ${key} precisa ser do tipo string`);
+    }
+  });
+
+  if (typeof(livro["quantidade"]) != "number") {
+    console.log(livro);
+    throw Error("O campo quantidade precisa ser do tipo numerico");
+  }
+
+  const newBooks = [...books, livro];
+
+  const data = JSON.stringify({ books: newBooks });
+
+  await fs.promises.writeFile(filePath, data, "utf-8");
+
+  return livro;
+};
+
+const teste = () => {
+  const livro = new Book("teste", "teste", "teste", "teste", 2);
+
+  const keys = Object.keys(livro);
+
+  console.log(keys);
+};
+
+teste();
 
 /**
- * 
- * @param {Book} livro 
+ * @returns {Promise<Book>}
+ * @param {string} titulo
  */
-export const comprarLivro = async (livro) => {
-    const books = await getBooks();
+export const buyBook = async (titulo) => {
+  const books = await getBooks();
 
-    const newBooks = books.map((book) => {
-        if (book.id === livro.id) {
-            book.estoque -= 1;
-        }
-        return book;
-    });
+  const buyedBook = books.find((book) => book.titulo == titulo);
 
-    const data = JSON.stringify({ books: newBooks });
-    await fs.promises.writeFile(filePath, data, 'utf-8');
-}
+  if(!buyedBook){
+    throw Error("Livro não encontrado");
+  }
 
 
+  const newBooks = books.map((book) => {
+    if (book.id === buyedBook.id) {
+      if(book.quantidade === 0)
+        throw Error("Sem exemplares disponiveis");
 
+      book.quantidade--;
+    }
+    return book;
+  });
 
+  const data = JSON.stringify({ books: newBooks });
+  await fs.promises.writeFile(filePath, data, "utf-8");
 
-
+  return buyedBook;
+};
