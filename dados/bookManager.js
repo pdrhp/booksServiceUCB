@@ -31,9 +31,11 @@ export const addLivro = async (livro) => {
   });
 
   keys.pop();
+  keys.splice(0, 1)
+
 
   keys.forEach((key) => {
-    if (!livro[key]) {
+    if (typeof(livro[key]) != 'string') {
       throw Error(`O campo ${key} precisa ser do tipo string`);
     }
   });
