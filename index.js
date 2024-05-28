@@ -14,7 +14,9 @@ app.post('/books', (req, res) => {
     
 })
 
-app.post('/books/comprar')
+app.post('/books/comprar', (req, res) => {
+
+});
 
 
 app.listen(3000, () => {
