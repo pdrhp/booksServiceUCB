@@ -1,16 +1,28 @@
 import fs from 'fs';
+import { Book } from '../models/Book.js';
 
-// Usage example
+
 const filePath = './dados/livros.json';
 
-
+/**
+ * 
+ * @returns {Promise<Book[]>}
+ */
 export const getBooks = async () => {
     const data = await fs.promises.readFile(filePath, 'utf-8');
     return JSON.parse(data).books;
 }
 
+
+/**
+ * 
+ * @param {Book} livro 
+ */
 export const addLivro = async (livro) => {
     const books = await getBooks();
+
+    const lastBook = books[books.length - 1];
+    livro.id = lastBook.id + 1;
 
     const newBooks = [...books, livro];
 
@@ -19,6 +31,10 @@ export const addLivro = async (livro) => {
     await fs.promises.writeFile(filePath, data, 'utf-8');
 }
 
+/**
+ * 
+ * @param {Book} livro 
+ */
 export const comprarLivro = async (livro) => {
     const books = await getBooks();
 
